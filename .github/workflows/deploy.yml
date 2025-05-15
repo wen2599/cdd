@@ -13,16 +13,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: sudo apt-get install -y parallel
-
       - name: Install Wrangler
-        run: npm install -g wrangler@3.14.1  # 有效版本
+        run: npm install -g wrangler@3.14.1  # 关键修正点
 
       - name: Upload to R2
         run: |
           cd client/public
-          find . -type f | parallel -j 10 wrangler r2 object put \
+          find . -type f | xargs -I{} wrangler r2 object put \
             "${{ secrets.R2_BUCKET_NAME }}/{}" \
             --file "{}"
         env:

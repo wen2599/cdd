@@ -1,6 +1,6 @@
 // client/src/main.js
 document.addEventListener('DOMContentLoaded', () => {
-  // 初始化卡片容器
+  // 初始化卡容器
   const container = document.getElementById('card-container');
   
   // 示例：动态加载卡片

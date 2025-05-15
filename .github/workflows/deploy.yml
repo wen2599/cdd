@@ -1,0 +1,30 @@
+# .github/workflows/deploy.yml
+name: Sync Static Assets to R2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'client/public/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Wrangler
+        run: npm install -g wrangler
+
+      - name: 上传到 R2
+        run: |
+          cd client/public
+          wrangler r2 object put ${{ vars.R2_BUCKET_NAME }}/ \
+            --directory . \
+            --include "*" \
+            --exclude "*.md" \
+            --concurrency 10
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}

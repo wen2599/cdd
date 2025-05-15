@@ -1,0 +1,37 @@
+name: Sync Static Assets to R2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'client/public/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y parallel
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Upload to R2
+        run: |
+          cd client/public
+          
+          # 获取变更文件列表
+          git diff --name-only HEAD^ HEAD -- . > changed_files.txt
+          
+          # 并行上传变更文件 (最多10线程)
+          cat changed_files.txt | parallel -j 10 wrangler r2 object put \
+            "${{ secrets.R2_BUCKET_NAME }}/{}" \
+            --file "{}"
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
